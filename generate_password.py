@@ -2,7 +2,8 @@ import secrets
 import os
 from argon2 import PasswordHasher
 import getpass
-from db import init_db
+from db import *
+import tkinter as tk
 
 def check_master_password(password_str):
     ph = PasswordHasher()
@@ -26,6 +27,25 @@ def extract_passwords():
     res = init_db()
     return res
 
+# def copy_pass_to_clipboard(id):
+#     try:
+#         pwd = fetch_password_by_id(id)
+#         if pwd:
+#             root = tk.Tk()
+#             root.withdraw()
+#             root.clipboard_clear()
+#             root.clipboard_append(pwd)
+#             root.update()
+#             print("Password copied to clipboard. It will be cleared in 20 seconds.")
+#             root.after(20000, lambda: (root.clipboard_clear(), print("Clipboard cleared"), root.destroy()))
+#             root.mainloop()
+#         else:
+#             print("Password not found")
+#     except KeyboardInterrupt:
+#         root.clipboard_clear()
+#         print("Program interrupted, clearing clipboard")
+#         exit(0)
+
 def access_manager(password_str):
     if check_master_password(password_str):
         print("Your passwords list: ")
@@ -35,14 +55,11 @@ def access_manager(password_str):
         choice = input()
         if choice == 'v':
             print("Enter the id of the password to view: ")
-            pwd_id = int(input())
-            for pwd in pwd_list:
-                if pwd[0] == pwd_id:
-                    print("Copying password to clipboard")
-                    # TODO: copy to clipboard
-                    break
+            pwd_id = str(input())
+            if fetch_password_by_id(pwd_id):
+                print("Password copied to clipboard")
             else:
-                print("Password id not found")
+                print("Password not found")
     else:
         print("Password verification failed")
         
