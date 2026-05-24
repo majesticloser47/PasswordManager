@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=67.6"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sesame"
+version = "0.1.0"
+description = "CLI password manager tool built using Python and argon2"
+requires-python = ">=3.10"
+dependencies = [
+    "argon2-cffi",
+    "python-dotenv",
+]
+
+[project.scripts]
+sesame = "src.sesame.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

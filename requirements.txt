@@ -1,2 +1,2 @@
-argon2==0.1.10
+argon2-cffi==25.1.0
 python-dotenv==1.2.2
