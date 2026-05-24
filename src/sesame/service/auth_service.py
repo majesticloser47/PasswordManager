@@ -18,7 +18,7 @@ def check_master_password(username, password_str):
     if not master_user:
         print("Master user not found, signing up new user...")
         signup_master(username, password_str)
-        return False
+        return True
     stored_pass_hash = master_user["password_hash"] if master_user else None
     try:
         return ph.verify(stored_pass_hash, password_str)
