@@ -1,20 +1,8 @@
-import getpass
 import tkinter as tk
 
 from argon2 import PasswordHasher
-from db.db import fetch_password_by_id, init_db
 
-
-def check_master_password(password_str):
-    ph = PasswordHasher()
-    # password is "thisisthepassword"
-    try:
-        stored_pass_hash = (
-            "$argon2id$v=19$m=65536,t=3,p=4$hCYtsVJUbfFiTK+ID6lVqQ$Q0/0L+8FCOutghB67QJ8KIFdjJFXoVH+LgVfF8/ON6w"
-        )
-        return ph.verify(stored_pass_hash, password_str)
-    except Exception as e:
-        return e.__str__()
+from ..repository.db import fetch_password_by_id, init_db
 
 
 def create_pass_hash():
@@ -49,25 +37,3 @@ def copy_pass_to_clipboard(id):
         root.clipboard_clear()
         print("Program interrupted, clearing clipboard")
         exit(0)
-
-
-def access_manager(password_str):
-    if check_master_password(password_str):
-        print("Your passwords list: ")
-        pwd_list = extract_passwords()
-        print(pwd_list)
-        print("Enter 'v' to view password, 'a' to add password, 'd' to delete password, 'q' to quit: ")
-        choice = input()
-        if choice == "v":
-            print("Enter the id of the password to view: ")
-            pwd_id = str(input())
-            if fetch_password_by_id(pwd_id):
-                print("Password copied to clipboard")
-            else:
-                print("Password not found")
-    else:
-        print("Password verification failed")
-
-
-password_str = getpass.getpass("Enter master password: ")
-access_manager(password_str)
