@@ -1,39 +1,25 @@
-import tkinter as tk
+import secrets
+import string
 
+import requests
 from argon2 import PasswordHasher
 
-from ..repository.db import fetch_password_by_id, init_db
+
+def get_qrng_salt():
+    response = requests.get("https://qrng.anu.edu.au/API/jsonI.php?length=16&type=hex16")
+    if response.status_code == 200:
+        data = response.json()
+        if data["success"]:
+            return data["data"][0]
+    raise KeyError("Failed to get salt from QRNG service.")
 
 
-def create_pass_hash():
-    print("Enter master password: ")
-    password_str = input()
-    ph = PasswordHasher()
-    pass_hash = ph.hash(password_str)
-    print("Password hash created: ", pass_hash)
-    return pass_hash
-
-
-def extract_passwords():
-    res = init_db()
-    return res
-
-
-def copy_pass_to_clipboard(id):
-    try:
-        pwd = fetch_password_by_id(id)
-        if pwd:
-            root = tk.Tk()
-            root.withdraw()
-            root.clipboard_clear()
-            root.clipboard_append(pwd)
-            root.update()
-            print("Password copied to clipboard. It will be cleared in 20 seconds.")
-            root.after(20000, lambda: (root.clipboard_clear(), print("Clipboard cleared"), root.destroy()))
-            root.mainloop()
-        else:
-            print("Password not found")
-    except KeyboardInterrupt:
-        root.clipboard_clear()
-        print("Program interrupted, clearing clipboard")
-        exit(0)
+def generate_password(length=16):
+    salt = get_qrng_salt()
+    chars = string.ascii_letters + string.digits + "!@#$%^&*"
+    if salt:
+        password = "".join(secrets.choice(chars) for _ in range(length))
+        pass_hash = PasswordHasher().hash(password + salt)
+        return pass_hash
+    else:
+        raise ValueError("Salt is None, cannot generate password.")
