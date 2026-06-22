@@ -4,8 +4,13 @@ import string
 import requests
 from argon2 import PasswordHasher
 
+from ..config import Config
+from .qrng import get_qrng_sim_value
+
 
 def get_qrng_salt():
+    if Config.ENV == "development":
+        return get_qrng_sim_value()
     response = requests.get("https://qrng.anu.edu.au/API/jsonI.php?length=16&type=hex16")
     if response.status_code == 200:
         data = response.json()

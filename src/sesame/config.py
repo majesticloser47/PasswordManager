@@ -7,3 +7,4 @@ load_dotenv()
 
 class Config:
     DB_PATH = os.getenv("DB_PATH")
+    ENV = os.getenv("ENV", "production")

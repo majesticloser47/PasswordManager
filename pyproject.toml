@@ -10,10 +10,17 @@ requires-python = ">=3.10"
 dependencies = [
     "argon2-cffi",
     "python-dotenv",
+    "Requests"
+]
+
+[project.optional-dependencies]
+dev = [
+    "qiskit",
+    "qiskit_aer",
 ]
 
 [project.scripts]
-sesame = "src.sesame.__main__:main"
+sesame = "sesame.__main__:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
