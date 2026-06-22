@@ -2,15 +2,17 @@ from qiskit import QuantumCircuit
 from qiskit_aer import AerSimulator
 
 
-def get_qrng_sim_value():
-    qc = QuantumCircuit(128, 128)
+class QRNG:
+    def __init__(self):
+        self.backend = AerSimulator()
 
-    qc.h(range(128))
+    def get_qrng_sim_rand_bits(self, n):
+        qc = QuantumCircuit(n, n)
 
-    qc.measure(range(128), range(128))
+        qc.h(range(n))
 
-    result = AerSimulator().run(qc, shots=1).result()
-    qrng_value = next(iter(result.get_counts(qc).keys()))
+        qc.measure(range(n), range(n))
 
-    hex_string = hex(int(qrng_value, 2))[2:].zfill(32)
-    return hex_string
+        result = self.backend.run(qc, shots=1).result()
+        qrng_bits = next(iter(result.get_counts(qc).keys()))
+        return qrng_bits
