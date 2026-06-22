@@ -1,16 +1,18 @@
 import tkinter as tk
 
-from ..repository.db import fetch_password_by_id, init_db
+from ..repository.db import DatabaseConnection
+
+db = DatabaseConnection()
 
 
 def extract_passwords():
-    res = init_db()
+    res = db.init_db()
     return res
 
 
 def copy_pass_to_clipboard(id):
     try:
-        pwd = fetch_password_by_id(id)
+        pwd = db.fetch_password_by_id(id)
         if pwd:
             root = tk.Tk()
             root.withdraw()
