@@ -19,6 +19,9 @@ dev = [
     "qiskit_aer",
 ]
 
+[tool.isort]
+profile = "black"
+
 [project.scripts]
 sesame = "sesame.__main__:main"
 
