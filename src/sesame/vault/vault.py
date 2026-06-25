@@ -66,6 +66,11 @@ class VaultSession:
             print("Failed to unlock the vault:", e)
             return False
 
+    def lock(self):
+        self.unlocked = False
+        self.vault_key = None
+        print("Vault is now locked.")
+
     def encrypt_vault_key(self, vault_key: bytes, kek: bytes) -> tuple[bytes, bytes]:
         nonce = secrets.token_bytes(12)
         aes = AESGCM(kek)
