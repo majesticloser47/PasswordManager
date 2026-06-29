@@ -1,3 +1,4 @@
+import os
 import secrets
 
 import argon2
@@ -5,6 +6,14 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 from sesame.repository import db
 from sesame.service.qrng import QRNG
+
+if os.name == "nt":
+    os.system("")
+
+_RESET = "\033[0m"
+_GREEN = "\033[92m"
+_RED = "\033[91m"
+_YELLOW = "\033[93m"
 
 
 class VaultSession:
@@ -39,7 +48,7 @@ class VaultSession:
     def unlock(self, master_password: str) -> bool:
         vault_info = self.database.fetch_vault_info()
         if not vault_info:
-            print("Vault not set up yet. Please set up the vault first.")
+            print(f"{_YELLOW} Vault not set up yet - setting up now... {_RESET}")
             self.vault_setup(master_password)
             vault_info = self.database.fetch_vault_info()
         kdf_salt = vault_info["kdf_salt"]
@@ -63,8 +72,13 @@ class VaultSession:
             self.unlocked = True
             return True
         except Exception as e:
-            print("Failed to unlock the vault:", e)
+            print(f"{_RED}✘  Failed to unlock the vault:{_RESET} {e}")
             return False
+
+    def lock(self):
+        self.unlocked = False
+        self.vault_key = None
+        print(f"{_YELLOW}⚠  Vault is now locked.{_RESET}")
 
     def encrypt_vault_key(self, vault_key: bytes, kek: bytes) -> tuple[bytes, bytes]:
         nonce = secrets.token_bytes(12)

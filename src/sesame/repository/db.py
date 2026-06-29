@@ -110,6 +110,12 @@ class DatabaseConnection:
         self.conn.commit()
         return True
 
+    def get_all_password_entries(self):
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT nonce, data FROM entries")
+        rows = cursor.fetchall()
+        return [{"nonce": row["nonce"], "data": row["data"]} for row in rows]
+
 
 def copy_to_clipboard(text):
     command = ""
