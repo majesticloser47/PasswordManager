@@ -3,8 +3,16 @@ import getpass
 import os
 import sys
 
+from rich.console import Console
+from rich.table import Table
+
 from sesame.service.generate_password import generate_password
-from sesame.service.password_actions import add_password_entry, copy_pass_to_clipboard
+from sesame.service.password_actions import (
+    add_password_entry,
+    copy_pass_to_clipboard,
+    get_password_entry_for_service,
+    retrieve_pass_list,
+)
 from sesame.vault.vault import VaultSession
 
 if os.name == "nt":
@@ -29,6 +37,8 @@ class SesameShell(cmd.Cmd):
         f"{_RESET}\n"
     )
 
+    console = Console()
+
     def __init__(self, vault: VaultSession):
         super().__init__()
         self.vault = vault
@@ -37,7 +47,7 @@ class SesameShell(cmd.Cmd):
         else:
             self.prompt = f"{_GREEN}open sesame{_RESET} > "
 
-    def do_unlock(self, arg):
+    def do_unlock(self, _):
         master_password = getpass.getpass("Enter master password: ", stream=sys.stdout)
         try:
             self.vault.unlock(master_password)
@@ -47,7 +57,7 @@ class SesameShell(cmd.Cmd):
         except Exception as e:
             print(f"{_RED}✘  Failed to unlock vault:{_RESET} {e}")
 
-    def do_generate(self, arg):
+    def do_generate(self, _):
         if self.vault.unlocked:
             service = input(f"{_CYAN}  Service name  : {_RESET}")
             username = input(f"{_CYAN}  Username      : {_RESET}")
@@ -60,14 +70,39 @@ class SesameShell(cmd.Cmd):
         else:
             print(f"{_YELLOW}⚠  Vault is locked — please unlock it first.{_RESET}")
 
-    def do_lock(self, arg):
+    def do_list(self, _):
+        if self.vault.unlocked:
+            entries = retrieve_pass_list(self.vault.vault_key)
+            if entries:
+                self.table = Table(show_header=True, title="Saved Passwords", header_style="bold magenta")
+                self.table.add_column("Service", style="cyan")
+                self.table.add_column("Username", style="green")
+                self.table.add_column("Notes", style="yellow")
+                self.table.add_column("Password", style="red")
+                for entry in entries:
+                    self.table.add_row(entry["service"], entry["username"], entry["notes"], "*" * 10)
+                self.console.print(self.table)
+            else:
+                print(f"{_YELLOW}⚠  No password entries found.{_RESET}")
+        else:
+            print(f"{_YELLOW}⚠  Vault is locked — please unlock it first.{_RESET}")
+
+    def do_fetch(self, arg):
+        if self.vault.unlocked:
+            service = arg.strip()
+            if not service:
+                print(f"{_YELLOW}⚠  Please provide a service name to fetch the password.{_RESET}")
+                return
+            get_password_entry_for_service(service, self.vault.vault_key)
+
+    def do_lock(self, _):
         if self.vault.unlocked:
             self.vault.lock()
             self.prompt = f"{_RED}closed sesame{_RESET} > "
         else:
             print(f"{_YELLOW}⚠  Vault is already locked.{_RESET}")
 
-    def do_exit(self, arg):
+    def do_exit(self, _):
         print(f"\n{_DIM}Exiting Sesame CLI. Byee byeeeeee!{_RESET}\n")
         return True
 
