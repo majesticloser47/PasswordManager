@@ -20,10 +20,12 @@ def retrieve_pass_list(vault_key):
     encrypted_entries = db.get_all_password_entries()
     decrypted_entries = []
     for entry in encrypted_entries:
+        entry_id = entry["id"]
         nonce = entry["nonce"]
         encrypted_data = entry["data"]
         decrypted_data = AESGCM(vault_key).decrypt(nonce, encrypted_data, None)
-        decrypted_entries.append(json.loads(decrypted_data))
+        decrypted_entries.append({"id": entry_id, **json.loads(decrypted_data)})
+    print(decrypted_entries)
     return decrypted_entries
 
 
@@ -32,6 +34,26 @@ def get_password_entry_for_service(service: str, vault_key):
     for entry in entries:
         if entry["service"] == service:
             copy_pass_to_clipboard(entry["password"])
+
+
+def delete_password_entry(service: str, vault_key):
+    entries = retrieve_pass_list(vault_key)
+    for entry in entries:
+        if entry["service"] == service:
+            prompt = input(f"Are you sure you want to delete the password entry for service '{service}'? (y/n): ")
+            if prompt.lower() == "n" or prompt.lower() == "no":
+                print("Deletion cancelled.")
+                return
+
+            elif prompt.lower() == "y" or prompt.lower() == "yes":
+                db.delete_password_entry(entry["id"])
+                print(f"Password entry for service '{service}' has been deleted.")
+                return
+
+            else:
+                print("Invalid input. Please enter 'y' or 'n'.")
+                return
+    print(f"No password entry found for service '{service}'.")
 
 
 def copy_pass_to_clipboard(text):

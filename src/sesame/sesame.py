@@ -10,6 +10,7 @@ from sesame.service.generate_password import generate_password
 from sesame.service.password_actions import (
     add_password_entry,
     copy_pass_to_clipboard,
+    delete_password_entry,
     get_password_entry_for_service,
     retrieve_pass_list,
 )
@@ -94,6 +95,16 @@ class SesameShell(cmd.Cmd):
                 print(f"{_YELLOW}⚠  Please provide a service name to fetch the password.{_RESET}")
                 return
             get_password_entry_for_service(service, self.vault.vault_key)
+
+    def do_delete(self, arg):
+        if self.vault.unlocked:
+            service = arg.strip()
+            if not service:
+                print(f"{_YELLOW}⚠  Please provide a service name to delete the password entry.{_RESET}")
+                return
+            delete_password_entry(service, self.vault.vault_key)
+        else:
+            print(f"{_YELLOW}⚠  Vault is locked — please unlock it first.{_RESET}")
 
     def do_lock(self, _):
         if self.vault.unlocked:

@@ -112,9 +112,20 @@ class DatabaseConnection:
 
     def get_all_password_entries(self):
         cursor = self.conn.cursor()
-        cursor.execute("SELECT nonce, data FROM entries")
+        cursor.execute("SELECT id, nonce, data FROM entries")
         rows = cursor.fetchall()
-        return [{"nonce": row["nonce"], "data": row["data"]} for row in rows]
+        return [{"id": row["id"], "nonce": row["nonce"], "data": row["data"]} for row in rows]
+
+    def delete_password_entry(self, service_id: int):
+        cursor = self.conn.cursor()
+        cursor.execute(
+            """
+            DELETE FROM entries
+            WHERE id = ?
+        """,
+            (service_id,),
+        )
+        self.conn.commit()
 
 
 def copy_to_clipboard(text):
