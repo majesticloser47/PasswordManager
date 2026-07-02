@@ -1,12 +1,9 @@
 import sqlite3
-import subprocess
-import sys
 
 from ..config import Config
 
 
 class DatabaseConnection:
-
     db_path = ""
     conn = None
 
@@ -78,7 +75,14 @@ class DatabaseConnection:
             INSERT OR REPLACE INTO vault (id, kdf_salt, kdf_memory, kdf_iterations, kdf_parallelism, key_nonce, encrypted_key)
             VALUES (1, ?, ?, ?, ?, ?, ?)
         """,
-            (kdf_salt, kdf_memory, kdf_iterations, kdf_parallelism, key_nonce, encrypted_key),
+            (
+                kdf_salt,
+                kdf_memory,
+                kdf_iterations,
+                kdf_parallelism,
+                key_nonce,
+                encrypted_key,
+            ),
         )
         self.conn.commit()
         return True
@@ -112,21 +116,20 @@ class DatabaseConnection:
 
     def get_all_password_entries(self):
         cursor = self.conn.cursor()
-        cursor.execute("SELECT nonce, data FROM entries")
+        cursor.execute("SELECT id, nonce, data FROM entries")
         rows = cursor.fetchall()
-        return [{"nonce": row["nonce"], "data": row["data"]} for row in rows]
+        return [
+            {"id": row["id"], "nonce": row["nonce"], "data": row["data"]}
+            for row in rows
+        ]
 
-
-def copy_to_clipboard(text):
-    command = ""
-    os_name = sys.platform
-    if os_name.startswith("win"):
-        command = "clip"
-    elif os_name.startswith("linux"):
-        command = "xclip -selection clipboard"
-    elif os_name.startswith("darwin"):
-        command = "pbcopy"
-    try:
-        subprocess.run(command, text="True", input=text)
-    except Exception as e:
-        print("Error copying to clipboard: ", e)
+    def delete_password_entry(self, service_id: int):
+        cursor = self.conn.cursor()
+        cursor.execute(
+            """
+            DELETE FROM entries
+            WHERE id = ?
+        """,
+            (service_id,),
+        )
+        self.conn.commit()
