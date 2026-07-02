@@ -3,14 +3,21 @@ import os
 import tkinter as tk
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from rich.console import Console
 
 from ..repository.db import DatabaseConnection
 
 db = DatabaseConnection()
+console = Console()
 
 
 def add_password_entry(service, username, notes, password, vault_key) -> bool:
-    data = {"service": service, "username": username, "notes": notes, "password": password}
+    data = {
+        "service": service,
+        "username": username,
+        "notes": notes,
+        "password": password,
+    }
     nonce = os.urandom(12)
     encrypted_data = AESGCM(vault_key).encrypt(nonce, json.dumps(data).encode(), None)
     return db.add_password_entry(encrypted_data, nonce)
@@ -25,7 +32,6 @@ def retrieve_pass_list(vault_key):
         encrypted_data = entry["data"]
         decrypted_data = AESGCM(vault_key).decrypt(nonce, encrypted_data, None)
         decrypted_entries.append({"id": entry_id, **json.loads(decrypted_data)})
-    print(decrypted_entries)
     return decrypted_entries
 
 
@@ -40,20 +46,26 @@ def delete_password_entry(service: str, vault_key):
     entries = retrieve_pass_list(vault_key)
     for entry in entries:
         if entry["service"] == service:
-            prompt = input(f"Are you sure you want to delete the password entry for service '{service}'? (y/n): ")
+            prompt = input(
+                f"Are you sure you want to delete the password entry for service '{service}'? (y/n): "
+            )
             if prompt.lower() == "n" or prompt.lower() == "no":
-                print("Deletion cancelled.")
+                console.print("[yellow]⚠  Deletion cancelled.[/yellow]")
                 return
 
             elif prompt.lower() == "y" or prompt.lower() == "yes":
                 db.delete_password_entry(entry["id"])
-                print(f"Password entry for service '{service}' has been deleted.")
+                console.print(
+                    f"[green]✔  Password entry for service '{service}' has been deleted.[/green]"
+                )
                 return
 
             else:
-                print("Invalid input. Please enter 'y' or 'n'.")
+                console.print("[red]✘  Invalid input. Please enter 'y' or 'n'.[/red]")
                 return
-    print(f"No password entry found for service '{service}'.")
+    console.print(
+        f"[yellow]⚠  No password entry found for service '{service}'.[/yellow]"
+    )
 
 
 def copy_pass_to_clipboard(text):
@@ -63,8 +75,17 @@ def copy_pass_to_clipboard(text):
         root.clipboard_clear()
         root.clipboard_append(text)
         root.update()
-        print("Password copied to clipboard. It will be cleared in 20 seconds.")
-        root.after(20000, lambda: (root.clipboard_clear(), print("Clipboard cleared"), root.destroy()))
+        console.print(
+            "[green]✔  Password copied to clipboard. It will be cleared in 20 seconds.[/green]"
+        )
+        root.after(
+            20000,
+            lambda: (
+                root.clipboard_clear(),
+                console.print("[yellow]⚠  Clipboard cleared.[/yellow]"),
+                root.destroy(),
+            ),
+        )
         root.mainloop()
     except KeyboardInterrupt:
         root.clipboard_clear()

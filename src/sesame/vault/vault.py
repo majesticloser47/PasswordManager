@@ -1,19 +1,11 @@
-import os
 import secrets
 
 import argon2
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from rich.console import Console
 
 from sesame.repository import db
 from sesame.service.qrng import QRNG
-
-if os.name == "nt":
-    os.system("")
-
-_RESET = "\033[0m"
-_GREEN = "\033[92m"
-_RED = "\033[91m"
-_YELLOW = "\033[93m"
 
 
 class VaultSession:
@@ -22,6 +14,7 @@ class VaultSession:
         self.unlocked = False
         self.database = db.DatabaseConnection()
         self.qrng = QRNG()
+        self.console = Console()
 
     def vault_setup(self, master_password: str):
         kdf_salt = secrets.token_bytes(16)
@@ -39,16 +32,27 @@ class VaultSession:
             type=argon2.low_level.Type.ID,
         )
         if not self.database.check_vault_exists():
-            vault_key_bit_string = self.qrng.get_qrng_sim_rand_bits(32 * 8)  # yayyyy quantum
+            vault_key_bit_string = self.qrng.get_qrng_sim_rand_bits(
+                32 * 8
+            )  # yayyyy quantum
             vault_key = int(vault_key_bit_string, 2).to_bytes(32, byteorder="big")
             nonce, encrypted_key = self.encrypt_vault_key(vault_key, kek)
-            self.database.vault_setup(kdf_salt, kdf_memory, kdf_iterations, kdf_parallelism, nonce, encrypted_key)
+            self.database.vault_setup(
+                kdf_salt,
+                kdf_memory,
+                kdf_iterations,
+                kdf_parallelism,
+                nonce,
+                encrypted_key,
+            )
             self.unlock(master_password)
 
     def unlock(self, master_password: str) -> bool:
         vault_info = self.database.fetch_vault_info()
         if not vault_info:
-            print(f"{_YELLOW} Vault not set up yet - setting up now... {_RESET}")
+            self.console.print(
+                "[yellow]⚠  Vault not set up yet - setting up now...[/yellow]"
+            )
             self.vault_setup(master_password)
             vault_info = self.database.fetch_vault_info()
         kdf_salt = vault_info["kdf_salt"]
@@ -72,13 +76,13 @@ class VaultSession:
             self.unlocked = True
             return True
         except Exception as e:
-            print(f"{_RED}✘  Failed to unlock the vault:{_RESET} {e}")
+            self.console.print(f"[red]✘  Failed to unlock the vault:[/red] {e}")
             return False
 
     def lock(self):
         self.unlocked = False
         self.vault_key = None
-        print(f"{_YELLOW}⚠  Vault is now locked.{_RESET}")
+        self.console.print("[yellow]⚠  Vault is now locked.[/yellow]")
 
     def encrypt_vault_key(self, vault_key: bytes, kek: bytes) -> tuple[bytes, bytes]:
         nonce = secrets.token_bytes(12)
@@ -86,7 +90,9 @@ class VaultSession:
         ciphertext = aes.encrypt(nonce, vault_key, None)
         return (nonce, ciphertext)
 
-    def decrypt_vault_key(self, ciphertext: bytes, kek: bytes, vault_nonce: bytes) -> bytes:
+    def decrypt_vault_key(
+        self, ciphertext: bytes, kek: bytes, vault_nonce: bytes
+    ) -> bytes:
         aes = AESGCM(kek)
         plaintext = aes.decrypt(vault_nonce, ciphertext, None)
         return plaintext
