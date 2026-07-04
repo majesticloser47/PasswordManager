@@ -58,6 +58,21 @@ class SesameShell(cmd.Cmd):
         else:
             self.console.print(self.vault_locked_message)
 
+    def do_add(self, _):
+        if self.vault.unlocked:
+            service = self.console.input("[cyan]  Service name   : [/cyan]")
+            username = self.console.input("[cyan]  Username       : [/cyan]")
+            notes = self.console.input("[cyan]  Notes (opt.)   : [/cyan]") or ""
+            password = getpass.getpass("  Enter password   :", stream=sys.stdout)
+            if add_password_entry(
+                service, username, notes, password, self.vault.vault_key
+            ):
+                self.console.print(
+                    "[green]✔  Password entry added successfully.[/green]"
+                )
+        else:
+            self.console.print(self.vault_locked_message)
+
     def do_list(self, _):
         if self.vault.unlocked:
             entries = retrieve_pass_list(self.vault.vault_key)
