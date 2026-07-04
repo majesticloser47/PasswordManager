@@ -5,6 +5,7 @@ import sys
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
+from setuptools_scm import get_version
 
 from sesame.service.generate_password import generate_password
 from sesame.service.password_actions import (
@@ -112,7 +113,7 @@ class SesameShell(cmd.Cmd):
     def start(self):
         self.console.print(
             Panel(
-                "[bold]Sesame CLI Password Manager[/bold]\n[dim]v0.1.0[/dim]",
+                f"[bold]Sesame CLI Password Manager[/bold]\n[dim]v{get_version()}[/dim]",
                 style="cyan",
                 padding=(1, 6),
             )

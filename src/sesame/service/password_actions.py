@@ -4,6 +4,7 @@ import tkinter as tk
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from rich.console import Console
+from rich.table import Table
 
 from ..repository.db import DatabaseConnection
 
@@ -37,9 +38,29 @@ def retrieve_pass_list(vault_key):
 
 def get_password_entry_for_service(service: str, vault_key):
     entries = retrieve_pass_list(vault_key)
-    for entry in entries:
-        if entry["service"] == service:
-            copy_pass_to_clipboard(entry["password"])
+    entries_found = [entry for entry in entries if entry["service"] == service]
+    if len(entries_found) == 0:
+        console.print("[yellow]⚠  No password entries found.[/yellow]")
+        return None
+    if len(entries_found) > 1:
+        console.print(
+            "[yellow]⚠  Multiple password entries found. Please specify the number (1, 2, ...)[/yellow]"
+        )
+        table = Table(show_header=True, header_style="bold magenta")
+        table.add_column("No.", style="dim", width=6)
+        table.add_column("Service")
+        table.add_column("Username")
+        table.add_column("Notes")
+        for i, entry in enumerate(entries_found):
+            table.add_row(
+                str(i + 1), entry["service"], entry["username"], entry["notes"]
+            )
+        console.print(table)
+        choice = console.input("Your choice: ")
+        copy_pass_to_clipboard(entries_found[int(choice) - 1]["password"])
+    else:
+        copy_pass_to_clipboard(entries_found[0]["password"])
+        return None
 
 
 def delete_password_entry(service: str, vault_key):
@@ -68,6 +89,13 @@ def delete_password_entry(service: str, vault_key):
     )
 
 
+def clear_clipboard(tk_root):
+    tk_root.clipboard_clear()
+    tk_root.update()
+    console.print("[yellow]⚠  Clipboard cleared.[/yellow]")
+    tk_root.destroy()
+
+
 def copy_pass_to_clipboard(text):
     try:
         root = tk.Tk()
@@ -78,16 +106,10 @@ def copy_pass_to_clipboard(text):
         console.print(
             "[green]✔  Password copied to clipboard. It will be cleared in 20 seconds.[/green]"
         )
-        root.after(
-            20000,
-            lambda: (
-                root.clipboard_clear(),
-                console.print("[yellow]⚠  Clipboard cleared.[/yellow]"),
-                root.destroy(),
-            ),
-        )
+        root.after(20000, clear_clipboard, root)
         root.mainloop()
     except KeyboardInterrupt:
         root.clipboard_clear()
+        root.update()
         print("Program interrupted, clearing clipboard")
         exit(0)
