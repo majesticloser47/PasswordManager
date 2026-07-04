@@ -46,30 +46,26 @@ class SesameShell(cmd.Cmd):
         except Exception as e:
             self.console.print(f"[red]✘  Failed to unlock vault:[/red] {e}")
 
-    def do_generate(self, _):
-        if self.vault.unlocked:
-            service = self.console.input("[cyan]  Service name   : [/cyan]")
-            username = self.console.input("[cyan]  Username       : [/cyan]")
-            notes = self.console.input("[cyan]  Notes (opt.)   : [/cyan]") or ""
-            length = int(self.console.input("[cyan]  Password length: [/cyan]"))
-            password = generate_password(length)
-            add_password_entry(service, username, notes, password, self.vault.vault_key)
-            copy_pass_to_clipboard(password)
-        else:
-            self.console.print(self.vault_locked_message)
-
     def do_add(self, _):
         if self.vault.unlocked:
             service = self.console.input("[cyan]  Service name   : [/cyan]")
             username = self.console.input("[cyan]  Username       : [/cyan]")
             notes = self.console.input("[cyan]  Notes (opt.)   : [/cyan]") or ""
-            password = getpass.getpass("  Enter password   :", stream=sys.stdout)
-            if add_password_entry(
-                service, username, notes, password, self.vault.vault_key
-            ):
-                self.console.print(
-                    "[green]✔  Password entry added successfully.[/green]"
+            add_or_generate = (
+                self.console.input(
+                    "[cyan]  Do you want to generate a password? (y/n): [/cyan]"
                 )
+                .strip()
+                .lower()
+            )
+            if add_or_generate == "y" or add_or_generate == "yes":
+                length = int(self.console.input("[cyan]  Password length: [/cyan]"))
+                password = generate_password(length)
+            else:
+                password = getpass.getpass("  Enter password   :", stream=sys.stdout)
+            add_password_entry(service, username, notes, password, self.vault.vault_key)
+            if add_or_generate == "y" or add_or_generate == "yes":
+                copy_pass_to_clipboard(password)
         else:
             self.console.print(self.vault_locked_message)
 
