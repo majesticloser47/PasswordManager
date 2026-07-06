@@ -6,17 +6,20 @@ on:
 permissions:
     contents: write
 jobs:
-    release: ubuntu-latest
-    steps:
-        - uses: actions/checkout@v4
-          with:
-              fetch-depth: 0
-        - uses: astral-sh/setup-uv@v3
-        - uses: actions/setup-python@v5
-          with:
-              python-version: "3.13"
-        - run: uv sync --extra dev
-        - env:
-              GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          run: uv run semantic-release version
-        - run: uv run python -m build
+    release:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+            - name: Set up uv
+              uses: astral-sh/setup-uv@v3
+            - name: Set up python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.13"
+            - run: uv sync --extra dev
+            - env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: uv run semantic-release version
+            - run: uv run python -m build
