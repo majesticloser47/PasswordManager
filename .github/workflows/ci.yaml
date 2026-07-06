@@ -38,8 +38,6 @@ jobs:
 
             - run: pip install -e ".[dev]"
 
-            - run: python -m
-
             - run: pre-commit run --all-files
 
             - run: uv run python -m build
