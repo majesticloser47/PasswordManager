@@ -1,11 +1,10 @@
 import json
 import os
-import tkinter as tk
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from rich.console import Console
 from rich.table import Table
-
+from sesame.util.functions import copy_pass_to_clipboard
 from ..repository.db import DatabaseConnection
 
 db = DatabaseConnection()
@@ -87,29 +86,3 @@ def delete_password_entry(service: str, vault_key):
     console.print(
         f"[yellow]⚠  No password entry found for service '{service}'.[/yellow]"
     )
-
-
-def clear_clipboard(tk_root):
-    tk_root.clipboard_clear()
-    tk_root.update()
-    console.print("[yellow]⚠  Clipboard cleared.[/yellow]")
-    tk_root.destroy()
-
-
-def copy_pass_to_clipboard(text):
-    try:
-        root = tk.Tk()
-        root.withdraw()
-        root.clipboard_clear()
-        root.clipboard_append(text)
-        root.update()
-        console.print(
-            "[green]✔  Password copied to clipboard. It will be cleared in 20 seconds.[/green]"
-        )
-        root.after(20000, clear_clipboard, root)
-        root.mainloop()
-    except KeyboardInterrupt:
-        root.clipboard_clear()
-        root.update()
-        print("Program interrupted, clearing clipboard")
-        exit(0)
