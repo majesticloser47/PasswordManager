@@ -1548,14 +1548,8 @@ version = "0.5.0"
 source = { editable = "." }
 dependencies = [
     { name = "argon2-cffi" },
-    { name = "bandit" },
-    { name = "build" },
-    { name = "pre-commit" },
-    { name = "pytest" },
     { name = "python-dotenv" },
-    { name = "python-semantic-release" },
     { name = "rich" },
-    { name = "ruff" },
 ]
 
 [package.optional-dependencies]
@@ -1566,27 +1560,37 @@ dev = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "bandit" },
+    { name = "build" },
+    { name = "pre-commit" },
+    { name = "pytest" },
     { name = "python-semantic-release" },
+    { name = "qiskit" },
+    { name = "qiskit-aer" },
+    { name = "ruff" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "argon2-cffi" },
-    { name = "bandit" },
-    { name = "build" },
-    { name = "pre-commit" },
-    { name = "pytest" },
     { name = "python-dotenv" },
-    { name = "python-semantic-release", specifier = ">=10.6.1" },
     { name = "qiskit", marker = "extra == 'dev'" },
     { name = "qiskit-aer", marker = "extra == 'dev'" },
     { name = "rich" },
-    { name = "ruff" },
 ]
 provides-extras = ["dev"]
 
 [package.metadata.requires-dev]
-dev = [{ name = "python-semantic-release", specifier = ">=10.6.1" }]
+dev = [
+    { name = "bandit" },
+    { name = "build" },
+    { name = "pre-commit" },
+    { name = "pytest" },
+    { name = "python-semantic-release", specifier = ">=10.6.1" },
+    { name = "qiskit" },
+    { name = "qiskit-aer" },
+    { name = "ruff" },
+]
 
 [[package]]
 name = "shellingham"

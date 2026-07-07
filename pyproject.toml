@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=67.6", "setuptools_scm>=7.1"]
+requires = ["setuptools>=67.6"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -11,12 +11,6 @@ dependencies = [
     "argon2-cffi",
     "python-dotenv",
     "rich",
-    "pytest",
-    "ruff",
-    "bandit",
-    "pre-commit",
-    "build",
-    "python-semantic-release>=10.6.1",
 ]
 
 [project.optional-dependencies]
@@ -47,5 +41,12 @@ tag_format = "v{version}"
 
 [dependency-groups]
 dev = [
+    "pytest",
+    "ruff",
+    "bandit",
+    "pre-commit",
+    "build",
     "python-semantic-release>=10.6.1",
+    "qiskit",
+    "qiskit_aer",
 ]

@@ -21,7 +21,6 @@ jobs:
               uses: actions/setup-python@v5
               with:
                   python-version: "3.13"
-            - run: uv add --dev build
             - run: uv sync --group dev
             - env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

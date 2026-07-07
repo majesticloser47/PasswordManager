@@ -38,6 +38,5 @@ jobs:
               with:
                   python-version: "3.13"
             - run: uv sync --group dev
-            - run: uv add --dev pre-commit
 
-            - run: pre-commit run --all-files
+            - run: uv run pre-commit run --all-files
