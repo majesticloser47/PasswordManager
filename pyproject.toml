@@ -25,4 +25,20 @@ sesame = "sesame.__main__:main"
 [tool.setuptools.packages.find]
 where = ["src"]
 
-[tool.setuptools_scm]
+[tool.semantic_release]
+version_toml = [
+    "pyproject.toml:project.verison"
+]
+
+branch = "master"
+
+build_command = "python -m build"
+
+commit_parser = "conventional"
+
+tag_format = "v{version}"
+
+[dependency-groups]
+dev = [
+    "python-semantic-release>=10.6.1",
+]
