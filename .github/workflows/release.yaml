@@ -5,6 +5,9 @@ on:
             - master
 permissions:
     contents: write
+concurrency:
+    group: release
+    cancel-in-progress: false
 jobs:
     release:
         runs-on: ubuntu-latest
@@ -18,7 +21,9 @@ jobs:
               uses: actions/setup-python@v5
               with:
                   python-version: "3.13"
-            - run: uv sync --extra dev
+            - run: uv add --dev build
+            - run: uv sync --group dev
             - env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              run: uv run semantic-release version
+              run: uv run semantic-release version --push
+            - run: uv run python -m build
