@@ -22,4 +22,3 @@ jobs:
             - env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: uv run semantic-release version
-            - run: uv run python -m build

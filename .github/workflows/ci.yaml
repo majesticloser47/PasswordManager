@@ -40,8 +40,6 @@ jobs:
             - name: Install pre-commit
               run: pip install pre-commit
 
-            - run: pip install -e ".[dev]"
-
             - run: pre-commit run --all-files
 
-            - run: uv run python -m build
+            - run: uv sync --extra dev
