@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.7.1 (2026-07-15)
+
+### Bug Fixes
+
+- Db is now moved to new path when db path is changed
+  ([`d8bab5f`](https://github.com/majesticloser47/PasswordManager/commit/d8bab5fcce48c944e8cf998a65b092a9cb8dbceb))
+
+
 ## v0.7.0 (2026-07-15)
 
 ### Chores
