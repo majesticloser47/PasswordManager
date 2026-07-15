@@ -198,7 +198,6 @@ seconds, or immediately on `Ctrl+C`.
 │   ├── sesame.py                    # SesameShell — the interactive cmd.Cmd REPL
 │   ├── config.py                    # Config — TOML-backed settings (vault.db_path, app.setup_complete)
 │   ├── config/                      # auto-generated; holds config.toml (gitignored)
-│   ├── sesame.db                    # default vault database location (gitignored)
 │   ├── repository/
 │   │   └── db.py                    # SQLite schema + CRUD for vault/entries
 │   ├── service/
