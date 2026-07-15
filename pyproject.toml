@@ -13,6 +13,8 @@ dependencies = [
     "rich",
     "Requests",
     "cryptography",
+    "pyperclip",
+    "typer",
 ]
 
 [project.scripts]
