@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.6.0 (2026-07-15)
+
+### Features
+
+- Added extra flag as cmd arg for quantum mode to enable quantum backed randomness
+  ([`0a97b31`](https://github.com/majesticloser47/PasswordManager/commit/0a97b319cd2c47f48ec4227562ba37a2f7526c28))
+
+
 ## v0.5.2 (2026-07-15)
 
 ### Bug Fixes
