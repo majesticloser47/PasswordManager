@@ -7,7 +7,8 @@ from rich.panel import Panel
 from rich.table import Table
 from importlib.metadata import version
 
-from sesame.service.generate_password import generate_password
+from sesame.service.enum.entropy_sources_enum import EntropySourceEnum
+from sesame.service.generate_password import PasswordGenerator
 from sesame.service.password_actions import (
     add_password_entry,
     copy_pass_to_clipboard,
@@ -22,9 +23,10 @@ class SesameShell(cmd.Cmd):
     intro = None
     console = Console()
 
-    def __init__(self, vault: VaultSession):
+    def __init__(self, vault: VaultSession, entropy_mode: EntropySourceEnum):
         super().__init__()
         self.vault = vault
+        self.password_generator = PasswordGenerator(entropy=entropy_mode)
         self.prompt = self._render_prompt("[red]closed sesame[/red]")
         self.vault_locked_message = (
             "[yellow]⚠  Vault is locked — please unlock it first.[/yellow]"
@@ -60,7 +62,7 @@ class SesameShell(cmd.Cmd):
             )
             if add_or_generate == "y" or add_or_generate == "yes":
                 length = int(self.console.input("[cyan]  Password length: [/cyan]"))
-                password = generate_password(length)
+                password = self.password_generator.generate_password(length)
             else:
                 password = getpass.getpass("  Enter password   :", stream=sys.stdout)
             add_password_entry(service, username, notes, password, self.vault.vault_key)

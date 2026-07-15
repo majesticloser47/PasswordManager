@@ -5,7 +5,7 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from rich.console import Console
 
 from sesame.repository import db
-from sesame.service.qrng import QRNG
+from sesame.service.entropy_sources.qrng import QuantumRandomNumberSource
 
 
 class VaultSession:
@@ -13,7 +13,7 @@ class VaultSession:
         self.vault_key = None
         self.unlocked = False
         self.database = db.DatabaseConnection()
-        self.qrng = QRNG()
+        self.qrng = QuantumRandomNumberSource()
         self.console = Console()
 
     def vault_setup(self, master_password: str):
@@ -32,9 +32,7 @@ class VaultSession:
             type=argon2.low_level.Type.ID,
         )
         if not self.database.check_vault_exists():
-            vault_key_bit_string = self.qrng.get_qrng_sim_rand_bits(
-                32 * 8
-            )  # yayyyy quantum
+            vault_key_bit_string = self.qrng.randbits(32 * 8)  # yayyyy quantum
             vault_key = int(vault_key_bit_string, 2).to_bytes(32, byteorder="big")
             nonce, encrypted_key = self.encrypt_vault_key(vault_key, kek)
             self.database.vault_setup(
