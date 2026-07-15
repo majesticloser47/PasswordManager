@@ -4,3 +4,6 @@ __pycache__/
 .env
 /venv/
 *.egg-info/
+config/
+src/sesame/config/
+*.db

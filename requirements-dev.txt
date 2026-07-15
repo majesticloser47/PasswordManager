@@ -1,5 +1,0 @@
-argon2==0.1.10
-python-dotenv==1.2.2
-qiskit==2.4.2
-qiskit_aer==0.17.2
-Requests==2.34.2
