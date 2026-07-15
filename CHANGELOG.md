@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.5.2 (2026-07-15)
+
+### Bug Fixes
+
+- Removed faulty QRNG and implemented ANU API, added fallback to CSPRNG in case ANU API fails
+  ([`7f973dc`](https://github.com/majesticloser47/PasswordManager/commit/7f973dc94493e65727a4fc95e829394989ecd2db))
+
+
 ## v0.5.1 (2026-07-07)
 
 ### Bug Fixes
