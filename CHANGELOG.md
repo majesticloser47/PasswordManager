@@ -2,6 +2,27 @@
 
 <!-- version list -->
 
+## v0.7.0 (2026-07-15)
+
+### Chores
+
+- Added readme file
+  ([`c529941`](https://github.com/majesticloser47/PasswordManager/commit/c52994146f8327230a466e86bf595703186c8e3f))
+
+- Updated dependencies
+  ([`a7fbe9f`](https://github.com/majesticloser47/PasswordManager/commit/a7fbe9fb515c1cbd255f78bfb640a36e005b7280))
+
+- Updated gitignore, removed unnecessary requirements-dev.txt file
+  ([`b3d33d6`](https://github.com/majesticloser47/PasswordManager/commit/b3d33d680bdcf8847c4e6068372163daf9fc6767))
+
+### Features
+
+- Made db path configurable, with a fallback default value, added config.toml file creation and
+  management, updated gitignore to ignore config files, first time vault set up triggers config file
+  creation
+  ([`a376575`](https://github.com/majesticloser47/PasswordManager/commit/a376575fe931543d62e3c72b2c1a3cb5cbcdf03f))
+
+
 ## v0.6.0 (2026-07-15)
 
 ### Features
