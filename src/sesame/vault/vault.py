@@ -2,38 +2,34 @@ import secrets
 
 import argon2
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-from rich.console import Console
-
-from sesame.repository import db
-from sesame.service.entropy_sources.qrng import QuantumRandomNumberSource
 
 
 class VaultSession:
-    def __init__(self):
+    def __init__(self, database, random_number_source, console):
         self.vault_key = None
         self.unlocked = False
-        self.database = db.DatabaseConnection()
-        self.qrng = QuantumRandomNumberSource()
-        self.console = Console()
+        self.database = database
+        self.random_number_source = random_number_source
+        self.console = console
 
     def vault_setup(self, master_password: str):
-        kdf_salt = secrets.token_bytes(16)
-
-        kdf_memory = 2**16
-        kdf_iterations = 3
-        kdf_parallelism = 4
-        kek = argon2.low_level.hash_secret_raw(
-            secret=master_password.encode(),
-            salt=kdf_salt,
-            time_cost=kdf_iterations,
-            memory_cost=kdf_memory,
-            parallelism=kdf_parallelism,
-            hash_len=32,
-            type=argon2.low_level.Type.ID,
-        )
         if not self.database.check_vault_exists():
-            vault_key_bit_string = self.qrng.randbits(32 * 8)  # yayyyy quantum
-            vault_key = int(vault_key_bit_string, 2).to_bytes(32, byteorder="big")
+            kdf_salt = secrets.token_bytes(16)
+            kdf_memory = 2**16
+            kdf_iterations = 3
+            kdf_parallelism = 4
+            kek = argon2.low_level.hash_secret_raw(
+                secret=master_password.encode(),
+                salt=kdf_salt,
+                time_cost=kdf_iterations,
+                memory_cost=kdf_memory,
+                parallelism=kdf_parallelism,
+                hash_len=32,
+                type=argon2.low_level.Type.ID,
+            )
+            vault_key = self.random_number_source.randbelow(2 ** (32 * 8)).to_bytes(
+                32, byteorder="big"
+            )  # yayyyy quantum
             nonce, encrypted_key = self.encrypt_vault_key(vault_key, kek)
             self.database.vault_setup(
                 kdf_salt,

@@ -7,8 +7,15 @@ from rich.table import Table
 from sesame.util.functions import copy_pass_to_clipboard
 from ..repository.db import DatabaseConnection
 
-db = DatabaseConnection()
 console = Console()
+_db: DatabaseConnection | None = None
+
+
+def _get_db() -> DatabaseConnection:
+    global _db
+    if _db is None:
+        _db = DatabaseConnection()
+    return _db
 
 
 def add_password_entry(service, username, notes, password, vault_key) -> bool:
@@ -20,11 +27,11 @@ def add_password_entry(service, username, notes, password, vault_key) -> bool:
     }
     nonce = os.urandom(12)
     encrypted_data = AESGCM(vault_key).encrypt(nonce, json.dumps(data).encode(), None)
-    return db.add_password_entry(encrypted_data, nonce)
+    return _get_db().add_password_entry(encrypted_data, nonce)
 
 
 def retrieve_pass_list(vault_key):
-    encrypted_entries = db.get_all_password_entries()
+    encrypted_entries = _get_db().get_all_password_entries()
     decrypted_entries = []
     for entry in encrypted_entries:
         entry_id = entry["id"]
@@ -74,7 +81,7 @@ def delete_password_entry(service: str, vault_key):
                 return
 
             elif prompt.lower() == "y" or prompt.lower() == "yes":
-                db.delete_password_entry(entry["id"])
+                _get_db().delete_password_entry(entry["id"])
                 console.print(
                     f"[green]✔  Password entry for service '{service}' has been deleted.[/green]"
                 )
