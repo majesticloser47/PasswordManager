@@ -89,6 +89,19 @@ SQLite database (on disk, ciphertext only)
 
 ## Installation
 
+You may install Sesame directly using pip:
+
+```bash
+pip install git+https://github.com/majesticloser47/PasswordManager
+```
+Then, simply run the sesame command to start:
+
+```bash
+sesame
+```
+
+OR clone the repo and set up the virtal environment and dependencies yourself:
+
 ```bash
 git clone https://github.com/majesticloser47/PasswordManager.git
 cd PasswordManager
@@ -102,7 +115,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Or install as an editable package (registers the `sesame` console script):
+OR install as an editable package (registers the `sesame` console script):
 
 ```bash
 pip install -e .
