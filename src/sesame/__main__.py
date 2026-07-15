@@ -1,18 +1,8 @@
-from sesame.service.enum.entropy_sources_enum import EntropySourceEnum
-from sesame.util.functions import clear_clipboard
-from sesame.sesame import SesameShell
-from sesame.vault.vault import VaultSession
+from sesame.cli import app
 
 
 def main():
-    try:
-        vault = VaultSession()  # Initialize the vault session
-        sesame_shell = SesameShell(vault, EntropySourceEnum.QRNG)
-        sesame_shell.start()
-    except KeyboardInterrupt:
-        print("Sesame interrupted, clearing clipboard and exiting...bye byeee!")
-        clear_clipboard()
-        exit(0)
+    app()
 
 
 if __name__ == "__main__":

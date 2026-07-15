@@ -22,10 +22,12 @@ from sesame.vault.vault import VaultSession
 class SesameShell(cmd.Cmd):
     intro = None
     console = Console()
+    entropy_mode: EntropySourceEnum
 
     def __init__(self, vault: VaultSession, entropy_mode: EntropySourceEnum):
         super().__init__()
         self.vault = vault
+        self.entropy_mode = entropy_mode
         self.password_generator = PasswordGenerator(entropy=entropy_mode)
         self.prompt = self._render_prompt("[red]closed sesame[/red]")
         self.vault_locked_message = (
@@ -124,9 +126,15 @@ class SesameShell(cmd.Cmd):
         return True
 
     def start(self):
+        mode_info = (
+            "Standard Mode"
+            if self.entropy_mode == EntropySourceEnum.CSPRNG
+            else "Quantum Mode"
+        )
+
         self.console.print(
             Panel(
-                f"[bold]Sesame CLI Password Manager[/bold]\n[dim]v{version('sesame')}[/dim]",
+                f"[bold]Sesame CLI Password Manager[/bold]\n[dim]v{version('sesame')}[/dim]\n[green]Mode:[/green] {mode_info}",
                 style="cyan",
                 padding=(1, 6),
             )
