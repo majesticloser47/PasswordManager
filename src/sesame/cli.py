@@ -1,4 +1,5 @@
 import os
+import shutil
 
 from sesame.service.entropy_sources.entropy_factory import create_entropy_source_factory
 from sesame.service.enum.entropy_sources_enum import EntropySourceEnum
@@ -21,11 +22,33 @@ def _prepare_db_path(raw_path: str):
     return path
 
 
+def _migrate_db_file(old_path: str, new_path: str, console: Console):
+    if not old_path or os.path.abspath(old_path) == os.path.abspath(new_path):
+        return
+    if not os.path.exists(old_path):
+        return
+    if os.path.exists(new_path):
+        console.print(
+            f"[yellow]⚠  A file already exists at '{new_path}'. Leaving the "
+            f"existing vault at '{old_path}' untouched — please move it "
+            "manually if you want to merge or replace it.[/yellow]"
+        )
+        return
+    try:
+        shutil.move(old_path, new_path)
+        console.print(
+            f"[green]✔  Moved vault database from '{old_path}' to '{new_path}'.[/green]"
+        )
+    except OSError as e:
+        console.print(
+            f"[red]✘  Failed to move vault database to '{new_path}': {e}[/red]"
+        )
+        raise
+
+
 def _run_first_time_setup(config: Config, console: Console):
     default_path = config.get_configurable_value("db_path")
-    console.print(
-        "[bold cyan]Welcome to Sesame![/bold cyan] Let's finish setting things up.\n"
-    )
+    console.print("[bold cyan]Welcome to Sesame![/bold cyan] Set up in progress...\n")
     console.print(
         f"The vault database will be stored at:\n  [cyan]{default_path}[/cyan]\n"
     )
@@ -114,7 +137,9 @@ def config_command():
 
     new_value = raw_value.strip()
     if name == "db_path":
+        old_value = config.get_configurable_value(name)
         new_value = _prepare_db_path(new_value)
+        _migrate_db_file(old_value, new_value, console)
 
     config.set_configurable_value(name, new_value)
     config.mark_setup_complete()
