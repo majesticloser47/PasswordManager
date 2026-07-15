@@ -7,8 +7,9 @@ class DatabaseConnection:
     db_path = ""
     conn = None
 
-    def __init__(self):
-        self.db_path = Config.DB_PATH
+    def __init__(self, config: Config | None = None):
+        self.config = config or Config()
+        self.db_path = self.config.vault_db_path
         self.init_db()
 
     def init_db(self):

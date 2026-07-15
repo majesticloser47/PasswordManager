@@ -13,6 +13,9 @@ dependencies = [
     "rich",
     "Requests",
     "cryptography",
+    "pyperclip",
+    "typer",
+    "simple-toml-configurator>=1.3.0",
 ]
 
 [project.scripts]
