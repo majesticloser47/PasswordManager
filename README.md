@@ -55,13 +55,13 @@ SQLite database (on disk, ciphertext only)
    master password via **Argon2id**, and stores the wrapped key plus the KDF
    salt/parameters in the `vault` table.
 2. On every subsequent unlock, Sesame re-derives the KEK from the master
-   password and the stored salt/parameters, then decrypts the vault key. The
-   vault key lives only in process memory for the session's duration.
+   password and the stored salt/parameters, then decrypts the vault key. The vault key is kept in memory while the vault is unlocked and is
+   discarded when the vault is locked or the application exits.
 3. Each password entry (service, username, password, notes) is serialized to
    JSON and encrypted with AES-256-GCM using a fresh random nonce, then
    stored in the `entries` table.
-4. Locking the vault (`lock`, or exiting the shell) discards the in-memory
-   vault key.
+4. Locking the vault (`lock`) discards the in-memory vault key. Exiting the
+   application also releases the active vault session.
 
 ---
 
@@ -75,15 +75,18 @@ SQLite database (on disk, ciphertext only)
 
 ### Runtime dependencies
 
-| Package                    | Purpose                                              |
-| -------------------------- | ---------------------------------------------------- |
-| `argon2-cffi`              | Argon2id key derivation                              |
-| `cryptography`             | AES-256-GCM authenticated encryption                 |
-| `rich`                     | Terminal UI (tables, colored output, panels)         |
-| `pyperclip`                | Clipboard read/write/clear                           |
-| `Requests`                 | Fetches random bytes from the ANU QRNG API           |
-| `typer`                    | CLI argument parsing (`--mode`, `config` subcommand) |
-| `simple-toml-configurator` | Reads/writes the app's TOML settings file            |
+| Package                    | Purpose                               |
+| -------------------------- | ------------------------------------- |
+| `argon2-cffi`              | Argon2id key derivation               |
+| `cryptography`             | AES-256-GCM authenticated encryption  |
+| `rich`                     | Terminal UI                           |
+| `pyperclip`                | Clipboard integration                 |
+| `requests`                 | ANU QRNG API access                   |
+| `typer`                    | CLI argument parsing                  |
+| `simple-toml-configurator` | TOML-backed application configuration |
+
+Dependency versions are managed through `pyproject.toml` and resolved
+reproducibly using `uv.lock`.
 
 ---
 
@@ -93,24 +96,32 @@ SQLite database (on disk, ciphertext only)
 git clone https://github.com/majesticloser47/PasswordManager.git
 cd PasswordManager
 
-python -m venv venv
-# Windows
-venv\Scripts\activate
-# macOS/Linux
-source venv/bin/activate
+The recommended installation method is [uv](https://docs.astral.sh/uv/),
+which uses `pyproject.toml` and the committed `uv.lock` file for reproducible
+dependency resolution.
 
-pip install -r requirements.txt
+```bash
+uv sync
 ```
 
-Or install as an editable package (registers the `sesame` console script):
+This installs the runtime dependencies and creates the project environment.
+You can then launch Sesame with:
+
+```bash
+uv run sesame
+```
+
+If you prefer to use pip, install the package directly from the repository:
 
 ```bash
 pip install -e .
 ```
 
-The project also has a [uv](https://docs.astral.sh/uv/) lockfile
-(`uv.lock`). If you use `uv`, `uv sync` installs the exact locked runtime and
-development dependencies in one step.
+For development, install the development dependency group instead:
+
+```bash
+uv sync --group dev
+```
 
 ---
 
@@ -138,6 +149,13 @@ sesame config
 
 Avoid pointing `db_path` at a cloud-synced or world-readable location unless
 you understand the implications of syncing an encrypted vault file.
+
+When changing `vault.db_path`, Sesame automatically creates the required
+parent directory and moves the existing vault database to the new location
+when the destination does not already contain a database.
+
+If a database already exists at the destination, Sesame leaves the existing
+vault untouched and does not overwrite it.
 
 ---
 
@@ -191,34 +209,42 @@ seconds, or immediately on `Ctrl+C`.
 
 ## Project Structure
 
-```
-├── src/sesame/
-│   ├── __main__.py                  # module entry point (`python -m sesame`), delegates to cli.py
-│   ├── cli.py                       # Typer app: `--mode` option, first-run wizard, `config` subcommand
-│   ├── sesame.py                    # SesameShell — the interactive cmd.Cmd REPL
-│   ├── config.py                    # Config — TOML-backed settings (vault.db_path, app.setup_complete)
-│   ├── config/                      # auto-generated; holds config.toml (gitignored)
-│   ├── sesame.db                    # default vault database location (gitignored)
-│   ├── repository/
-│   │   └── db.py                    # SQLite schema + CRUD for vault/entries
-│   ├── service/
-│   │   ├── encrypt_decrypt.py       # generic AES-256-GCM helpers
-│   │   ├── generate_password.py     # PasswordGenerator (uses a pluggable entropy source)
-│   │   ├── password_actions.py      # add/list/fetch/delete entry logic
-│   │   ├── entropy_sources/
-│   │   │   ├── entropy_source.py    # EntropySource abstract base class
-│   │   │   ├── csprng.py            # CSPRNG entropy source (secrets.randbelow)
-│   │   │   ├── qrng.py              # QRNG entropy source (ANU API, falls back to CSPRNG)
-│   │   │   └── entropy_factory.py   # builds an entropy source from EntropySourceEnum
-│   │   └── enum/
-│   │       └── entropy_sources_enum.py  # EntropySourceEnum: CSPRNG | QRNG
-│   ├── util/
-│   │   └── functions.py             # clipboard copy/clear helpers
-│   └── vault/
-│       └── vault.py                 # VaultSession — KDF, key wrap/unwrap, lock/unlock
-├── pyproject.toml                   # package metadata, dependencies, tooling config
-├── requirements.txt                 # runtime dependencies (pinned)
-└── uv.lock                          # locked dependency versions (used by `uv`)
+```text
+├── .github/
+│   └── workflows/
+│       ├── ci.yaml                 # CI: tests and pre-commit checks
+│       └── release.yaml            # Automated semantic releases
+├── src/
+│   └── sesame/
+│       ├── __main__.py             # Module entry point
+│       ├── cli.py                  # Typer CLI and first-run setup
+│       ├── config.py               # TOML-backed application configuration
+│       ├── repository/
+│       │   └── db.py               # SQLite schema and database operations
+│       ├── service/
+│       │   ├── encrypt_decrypt.py  # AES-256-GCM helpers
+│       │   ├── generate_password.py
+│       │   ├── password_actions.py
+│       │   ├── entropy_sources/
+│       │   │   ├── entropy_source.py
+│       │   │   ├── csprng.py
+│       │   │   ├── qrng.py
+│       │   │   └── entropy_factory.py
+│       │   └── enum/
+│       │       └── entropy_sources_enum.py
+│       ├── util/
+│       │   └── functions.py         # Clipboard utilities
+│       └── vault/
+│           └── vault.py             # Vault key lifecycle and encryption
+├── tests/
+│   ├── conftest.py
+│   ├── helpers.py
+│   └── unit/                        # Unit tests mirroring src structure
+├── .gitignore
+├── .pre-commit-config.yaml
+├── pyproject.toml                   # Project metadata and dependencies
+├── uv.lock                          # Reproducible dependency lockfile
+└── README.md
 ```
 
 ---
@@ -226,7 +252,7 @@ seconds, or immediately on `Ctrl+C`.
 ## Development
 
 Dev/test dependencies (`pytest`, `ruff`, `bandit`, `pre-commit`, `build`,
-`python-semantic-release`) are declared as a `dependency-group` in
+`python-semantic-release`) are declared as a dependency group in
 `pyproject.toml`. Install them with:
 
 ```bash
@@ -234,14 +260,22 @@ uv sync --group dev
 pre-commit install
 ```
 
-- **Tests:** `pytest`
-- **Lint/format:** `ruff check .`
-- **Security scan:** `bandit -r src`
-- **Pre-commit hooks:** trailing whitespace/EOF fixers, `ruff`, `flake8`,
-  `pyupgrade`, and `gitleaks` (secret scanning) also run via
-  `.pre-commit-config.yaml`
-- **Versioning/release:** managed via `python-semantic-release` (conventional
-  commits, configured in `pyproject.toml`)
+The same checks are used by CI on pushes and pull requests targeting `master`
+and `dev`:
+
+```bash
+uv run pytest --cov
+uv run pre-commit run --all-files
+```
+
+- **Tests:** `pytest` with coverage reporting
+- **Lint/format:** Ruff and Ruff format
+- **Code quality:** Flake8 and Pyupgrade
+- **Security:** Bandit and Gitleaks secret scanning
+- **Pre-commit hooks:** all repository quality and security checks are defined
+  in `.pre-commit-config.yaml`
+- **Versioning/release:** managed via `python-semantic-release` using
+  conventional commits; automated releases run on pushes to `master`
 
 ---
 
