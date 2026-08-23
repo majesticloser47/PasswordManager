@@ -41,9 +41,32 @@ tag_format = "v{version}"
 [dependency-groups]
 dev = [
     "pytest",
+    "pytest-cov",
+    "pytest-mock",
     "ruff",
     "bandit",
     "pre-commit",
     "build",
     "python-semantic-release>=10.6.1",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-ra --strict-markers"
+
+[tool.coverage.run]
+source = ["src/sesame"]
+omit = [
+    "src/sesame/__main__.py",
+]
+
+[tool.coverage.report]
+fail_under = 80
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
 ]

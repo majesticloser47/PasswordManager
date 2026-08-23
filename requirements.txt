@@ -1,5 +1,5 @@
 argon2==0.1.10
-cryptography==49.0.0
+cryptography==50.0.0
 pyperclip==1.11.0
 python-dotenv==1.2.2
 Requests==2.34.2
