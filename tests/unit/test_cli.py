@@ -180,20 +180,24 @@ class TestMainCallback:
         mocks["shell_instance"].start.assert_called_once()
 
     def test_runs_first_time_setup_when_first_run(self, mocker):
+        mocks = self._patch_collaborators(mocker, is_first_run=True)
         setup_mock = mocker.patch("sesame.cli._run_first_time_setup")
         ctx = SimpleNamespace(invoked_subcommand=None)
 
         main(ctx, mode=EntropySourceEnum.CSPRNG)
 
-        setup_mock.assert_called_once()
+        setup_mock.assert_called_once_with(mocks["config"], mocker.ANY)
+        mocks["shell_instance"].start.assert_called_once()
 
     def test_skips_first_time_setup_when_already_done(self, mocker):
+        mocks = self._patch_collaborators(mocker, is_first_run=False)
         setup_mock = mocker.patch("sesame.cli._run_first_time_setup")
         ctx = SimpleNamespace(invoked_subcommand=None)
 
         main(ctx, mode=EntropySourceEnum.CSPRNG)
 
         setup_mock.assert_not_called()
+        mocks["shell_instance"].start.assert_called_once()
 
     def test_keyboard_interrupt_clears_clipboard_and_exits(self, mocker):
         mocks = self._patch_collaborators(mocker)
