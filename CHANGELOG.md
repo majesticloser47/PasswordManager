@@ -2,6 +2,27 @@
 
 <!-- version list -->
 
+## v0.7.2 (2026-08-23)
+
+### Bug Fixes
+
+- Fixed test cases
+  ([`07e228f`](https://github.com/majesticloser47/PasswordManager/commit/07e228f7beb58b79cb1888cfe0ab5537f33f9c6d))
+
+- Remediated vulnerabilities from dependabot
+  ([`0151295`](https://github.com/majesticloser47/PasswordManager/commit/0151295b1f29d4c0198c99e5176f2c73cdfb0f8b))
+
+### Chores
+
+- Added unit tests
+  ([`c785417`](https://github.com/majesticloser47/PasswordManager/commit/c785417709fbf9e90286e72ee7b5e892a8dfa3f0))
+
+### Documentation
+
+- Update installation instructions in README
+  ([`3faa81c`](https://github.com/majesticloser47/PasswordManager/commit/3faa81cdc3fbc0b6661513e2107b1d3e71e3d3b1))
+
+
 ## v0.7.1 (2026-07-15)
 
 ### Bug Fixes
