@@ -92,6 +92,19 @@ reproducibly using `uv.lock`.
 
 ## Installation
 
+You may install Sesame directly using pip:
+
+```bash
+pip install git+https://github.com/majesticloser47/PasswordManager
+```
+Then, simply run the sesame command to start:
+
+```bash
+sesame
+```
+
+OR clone the repo and set up the virtal environment and dependencies yourself:
+
 ```bash
 git clone https://github.com/majesticloser47/PasswordManager.git
 cd PasswordManager
